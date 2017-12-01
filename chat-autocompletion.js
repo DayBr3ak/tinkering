@@ -58,11 +58,14 @@ async function waitformain() {
 
 const CHAT_INPUT = '.chat-input';
 const CHAT_CONTAINER = '.chat-room__container';
-const TEXTAREA = '.chat-input textarea';
+const ORIGINAL_TEXTAREA = '.chat-input textarea';
+const CHAT_TEXTAREA = '#bttv-chat-input';
+
 
 function newTextArea() {
   const text = document.createElement('textarea');
-  const $oldText = $(TEXTAREA);
+  const $oldText = $(ORIGINAL_TEXTAREA);
+  window.$oldText = $oldText;
   $oldText[0].before(text);
   $text = $(text);
 
@@ -72,38 +75,56 @@ function newTextArea() {
       const v = $oldText.attr(attr);
       $text.attr(attr, v);
     })
+  $text.attr('id', 'bttv-chat-input');
 
-  window.$oldText = $oldText;
   $oldText.hide();
+  return $text;
+}
 
-  $text.sendValue = () => {
-    chatInputCtrl.props.onSendMessage($text.val());
-    $text.val('');
+class TabCompletionModule {
+  constructor() {
+    $('body').off('click.tabComplete focus.tabComplete keydown.tabComplete')
+      .on('click.tabComplete focus.tabComplete', CHAT_TEXT_AREA, () => this.onFocus())
+      // .on('click.tabComplete focus.tabComplete', CONVERSATION_TEXT_AREA, this.onFocus)
+      .on('keydown.tabComplete', CHAT_TEXT_AREA, e => this.onKeyDown(e))
+      // .on('keydown.tabComplete', CONVERSATION_TEXT_AREA, e => this.onKeyDown(e, false));
   }
 
-  $text.on('keydown', e => {
+  sendMessage() {
+    this.chatInputCtrl.props.onSendMessage(this.$text.val());
+    this.$text.val('');
+  }
+
+  load() {
+    this.tabTries = -1;
+    this.suggestions = null;
+    this.textSplit = ['', '', ''];
+    this.userList = new Set();
+    this.messageHistory = [];
+    this.historyPos = -1;
+
+    this.chatInputCtrl = getController($(CHAT_INPUT)[0]);
+    this.$text = newTextArea();
+  }
+
+  onKeyDown(e) {
+    const $text = this.$text;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      $text.sendValue();
+      this.sendMessage();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      $text.autoCompletion();
+      console.log('auto complete', $text.val());
     }
-  });
-
-  $text.autoCompletion = () => {
-    console.log('auto complete', $text.val());
   }
-  return $text;
 }
 
 
 function main() {
   $ = window.$;
-  chatInputCtrl = getController($(CHAT_INPUT)[0]);
-  const emotes = chatInputCtrl.props.emotes;
 
-  const $text = newTextArea();
+  const module = new TabCompletionModule();
+  module.load();
 
   window.$text = $text;
   window.chatInputCtrl = chatInputCtrl;
