@@ -117,6 +117,10 @@ class TabCompletionModule {
       console.log('auto complete', $text.val());
     }
   }
+
+  onFocus() {
+    console.log('onFocus()');
+  }
 }
 
 
