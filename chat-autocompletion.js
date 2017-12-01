@@ -84,9 +84,9 @@ function newTextArea() {
 class TabCompletionModule {
   constructor() {
     $('body').off('click.tabComplete focus.tabComplete keydown.tabComplete')
-      .on('click.tabComplete focus.tabComplete', CHAT_TEXT_AREA, () => this.onFocus())
+      .on('click.tabComplete focus.tabComplete', CHAT_TEXTAREA, () => this.onFocus())
       // .on('click.tabComplete focus.tabComplete', CONVERSATION_TEXT_AREA, this.onFocus)
-      .on('keydown.tabComplete', CHAT_TEXT_AREA, e => this.onKeyDown(e))
+      .on('keydown.tabComplete', CHAT_TEXTAREA, e => this.onKeyDown(e))
       // .on('keydown.tabComplete', CONVERSATION_TEXT_AREA, e => this.onKeyDown(e, false));
   }
 
@@ -125,6 +125,7 @@ function main() {
 
   const module = new TabCompletionModule();
   module.load();
+  console.log('TabCompletionModule() loaded');
 
   window.$text = $text;
   window.chatInputCtrl = chatInputCtrl;
